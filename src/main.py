@@ -1,7 +1,7 @@
 import argparse
+import random
 from collections import defaultdict
-
-from utils import print_dict
+from os import getenv
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -24,7 +24,7 @@ args = arg_parser.parse_args()
 load_dotenv()
 
 # Create spotipy client
-scope = "user-library-read"
+scope = ["user-library-read", "playlist-modify-public"]
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
 # Find the id of the argument playlist
@@ -43,6 +43,13 @@ if playlist_id is None:
 playlist_len = sp.playlist_tracks(playlist_id=playlist_id, fields="total")["total"]
 offset = 0
 
+# Create a new playlist with argument name
+new_playlist = sp.user_playlist_create(
+    user=getenv("SPOTIFY_USER_ID"), name=args.out_playlist
+)
+
+print(new_playlist)
+
 # Store all tracks here
 track_store = defaultdict(list)
 
@@ -57,9 +64,17 @@ while offset < playlist_len:
         fields=["items"],
     )["items"]
     offset += limit
-    
+
     # Group store by artist id
     for t in next_tracks:
         artist_id = t["track"]["album"]["artists"][0]["id"]
         track_id = t["track"]["id"]
         track_store[artist_id].append(track_id)
+
+# Add at most this number of tracks per artist to playlist
+max_num_per_artist = 5
+
+for _, track_id_list in dict.items(track_store):
+    subset = random.sample(track_id_list, min(len(track_id_list), max_num_per_artist))
+
+    sp.playlist_add_items(playlist_id=new_playlist["id"], items=subset)
