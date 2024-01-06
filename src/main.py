@@ -10,13 +10,25 @@ from dotenv import load_dotenv
 # Create command line arguments
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument(
-    "-p",
-    "--playlist_name",
+    "-s",
+    "--source_playlist",
     help="The name of the playlist that contains the wanted content.",
+    type=str,
     required=True,
 )
 arg_parser.add_argument(
-    "-o", "--out_playlist", help="The name of the output playlist", required=True
+    "-d",
+    "--dest_playlist",
+    help="The name of the output playlist",
+    type=str,
+    required=True,
+)
+arg_parser.add_argument(
+    "-n",
+    "--number_of_tracks_per_artist",
+    help="Number of tracks to add per artist to new playlist from source playlist",
+    type=int,
+    default=5,
 )
 args = arg_parser.parse_args()
 
@@ -31,13 +43,13 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 playlist_id = None
 playlists = sp.current_user_playlists()
 for playlist in playlists["items"]:
-    if playlist["name"] == args.playlist_name:
+    if playlist["name"] == args.source_playlist:
         playlist_id = playlist["id"]
-    if playlist["name"] == args.out_playlist:
-        raise Exception(f"A playlist named {args.out_playlist} already exists!")
+    if playlist["name"] == args.dest_playlist:
+        raise Exception(f"A playlist named {args.dest_playlist} already exists!")
 
 if playlist_id is None:
-    raise Exception(f"No playlist named {args.playlist_name} exists for this user!")
+    raise Exception(f"No playlist named {args.source_playlist} exists for this user!")
 
 # Get the length of the playlist
 playlist_len = sp.playlist_tracks(playlist_id=playlist_id, fields="total")["total"]
@@ -45,10 +57,8 @@ offset = 0
 
 # Create a new playlist with argument name
 new_playlist = sp.user_playlist_create(
-    user=getenv("SPOTIFY_USER_ID"), name=args.out_playlist
+    user=getenv("SPOTIFY_USER_ID"), name=args.dest_playlist
 )
-
-print(new_playlist)
 
 # Store all tracks here
 track_store = defaultdict(list)
@@ -71,10 +81,11 @@ while offset < playlist_len:
         track_id = t["track"]["id"]
         track_store[artist_id].append(track_id)
 
-# Add at most this number of tracks per artist to playlist
-max_num_per_artist = 5
-
 for _, track_id_list in dict.items(track_store):
-    subset = random.sample(track_id_list, min(len(track_id_list), max_num_per_artist))
+    subset = random.sample(
+        track_id_list, min(len(track_id_list), args.number_of_tracks_per_artist)
+    )
 
     sp.playlist_add_items(playlist_id=new_playlist["id"], items=subset)
+
+print(f"Done. Playlist {args.dest_playlist} successfully created.")
