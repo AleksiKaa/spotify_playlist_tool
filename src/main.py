@@ -44,7 +44,7 @@ playlist_len = sp.playlist_tracks(playlist_id=playlist_id, fields="total")["tota
 offset = 0
 
 # Store all tracks here
-track_store = []
+track_store = defaultdict(list)
 
 # Method returns 100 tracks at a time, iterate until all have been fetched
 while offset < playlist_len:
@@ -57,15 +57,9 @@ while offset < playlist_len:
         fields=["items"],
     )["items"]
     offset += limit
-
+    
+    # Group store by artist id
     for t in next_tracks:
-        track = []
-        track.append(t["track"]["album"]["artists"][0]["id"])
-        track.append(t["track"]["id"])
-        track_store.append(track)
-
-# Group store by artist id
-tracks_grouped = defaultdict(list)
-for artist_id, track_id in track_store:
-    tracks_grouped[artist_id].append(track_id)
-
+        artist_id = t["track"]["album"]["artists"][0]["id"]
+        track_id = t["track"]["id"]
+        track_store[artist_id].append(track_id)
