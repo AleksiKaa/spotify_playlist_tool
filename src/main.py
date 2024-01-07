@@ -34,18 +34,22 @@ def create_playlist_from_source(source, dest, num):
         print(f"No playlist named {source} exists for this user!")
         return
 
-    # Get the length of the playlist
-    playlist_len = sp.playlist_tracks(playlist_id=playlist_id, fields="total")["total"]
-    offset = 0
-
     # Create a new playlist with name dest
+    print(f"Creating playlist {dest}")
     new_playlist = sp.user_playlist_create(user=getenv("SPOTIFY_USER_ID"), name=dest)
+    print("Done.")
 
     # Store all tracks here
     track_store = defaultdict(list)
 
+    # Get the length of the playlist
+    playlist_len = sp.playlist_tracks(playlist_id=playlist_id, fields="total")["total"]
+    offset = 0
+
     # Method returns 100 tracks at a time, iterate until all have been fetched
+    print("Collecting tracks from source playlist...")
     while offset < playlist_len:
+        print(f"Handling {offset}/{playlist_len}")
         limit = 100
         next_tracks = sp.playlist_tracks(
             playlist_id=playlist_id,
@@ -61,19 +65,22 @@ def create_playlist_from_source(source, dest, num):
             artist_id = t["track"]["album"]["artists"][0]["id"]
             track_id = t["track"]["id"]
             track_store[artist_id].append(track_id)
+    print("Done.")
 
+    print("Adding tracks to playlist...")
     for _, track_id_list in dict.items(track_store):
         subset = random.sample(track_id_list, min(len(track_id_list), num))
 
         sp.playlist_add_items(playlist_id=new_playlist["id"], items=subset)
+    print("Done.")
 
-    print(f"Done. Playlist {dest} successfully created.")
+    print(f"Playlist {dest} successfully created.")
     return
 
 
 def main():
     """
-    Extracts args command line
+    Extracts args from command line and run script
     """
     # Create command line arguments
     arg_parser = argparse.ArgumentParser()
