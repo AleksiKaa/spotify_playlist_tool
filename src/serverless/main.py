@@ -1,5 +1,6 @@
 import functions_framework
-from main import create_playlist_from_source
+from playlist import create_playlist_from_source
+
 
 @functions_framework.http
 def create_gym_playlist(request):
@@ -8,6 +9,7 @@ def create_gym_playlist(request):
     """
     create_playlist_from_source("salimatsku", "sali", 5)
     return 200
+
 
 @functions_framework.http
 def create_gym_playlist_from_args(request):
