@@ -3,7 +3,7 @@ from local.playlist import create_playlist_from_source
 
 
 @functions_framework.http
-def create_gym_playlist(request):
+def create_gym_playlist():
     """
     Creates a playlist with hardcoded values via http get request.
     """
@@ -23,3 +23,4 @@ def create_gym_playlist_from_args(request):
 
     create_playlist_from_source(source, dest, num or 5)
     return 200
+
