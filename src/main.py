@@ -1,5 +1,5 @@
 import argparse
-from playlist import create_playlist_from_source
+from serverless.local.playlist import create_playlist_from_source
 
 def main():
     """
