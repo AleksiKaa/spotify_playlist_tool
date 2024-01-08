@@ -27,11 +27,11 @@ def create_playlist_from_source(source, dest, num):
             playlist_id = playlist["id"]
         if playlist["name"] == dest:
             print(f"A playlist named {dest} already exists!")
-            return
+            return "failure"
 
     if playlist_id is None:
         print(f"No playlist named {source} exists for this user!")
-        return
+        return "failure"
 
     # Create a new playlist with name dest
     print(f"Creating playlist {dest}")
@@ -74,4 +74,4 @@ def create_playlist_from_source(source, dest, num):
     print("Done.")
 
     print(f"Playlist {dest} successfully created.")
-    return
+    return "success"
