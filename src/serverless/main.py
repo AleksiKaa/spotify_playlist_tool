@@ -1,5 +1,5 @@
 import functions_framework
-from playlist import create_playlist_from_source
+from local.playlist import create_playlist_from_source
 
 
 @functions_framework.http
