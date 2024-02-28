@@ -16,7 +16,7 @@ def create_playlist_from_source(source, dest, num):
     load_dotenv()
 
     # Create spotipy client
-    scope = ["user-library-read", "playlist-modify-public"]
+    scope = ["user-library-read", "playlist-modify-public", "playlist-modify-private"]
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
     # Find the id of the argument playlist
